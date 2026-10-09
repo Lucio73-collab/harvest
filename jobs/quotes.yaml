@@ -1,0 +1,23 @@
+# Browser mode: for JavaScript apps, infinite scroll and "load more" buttons.
+name: quotes
+start_urls:
+  - https://quotes.toscrape.com/scroll
+render: browser
+crawl:
+  max_pages: 1
+  max_depth: 0
+browser:
+  wait_until: networkidle
+  wait_for: ".quote"
+  scroll: 5                 # scroll to the bottom 5 times
+  scroll_pause: 1.0
+  click: []                 # e.g. ["button.load-more"]
+  screenshot: false
+extract:
+  mode: rules
+  item: ".quote"
+  key: text
+  fields:
+    text: ".text"
+    author: ".author"
+    tags: {css: ".tag::text", multiple: true}

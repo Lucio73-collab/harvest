@@ -1,0 +1,23 @@
+# LLM mode: describe what you want, a local Ollama model fills in the JSON.
+# Needs Ollama running (ollama serve) and the model pulled (ollama pull llama3.1).
+name: product-llm
+start_urls:
+  - https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html
+render: http
+crawl:
+  max_pages: 5
+  max_depth: 0
+extract:
+  mode: llm               # or 'hybrid': CSS rules first, LLM fills the gaps
+  include_meta: true
+  llm:
+    provider: ollama      # or 'openai' for any OpenAI-compatible API (host = base URL)
+    model: llama3.1
+    host: http://localhost:11434
+    instructions: Extract the product details from this page.
+    many: false           # true = expect a list of items per page
+    schema:
+      name: string
+      price: number
+      in_stock: boolean
+      description: string

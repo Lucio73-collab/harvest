@@ -1,0 +1,17 @@
+# Auto mode: grabs title, description, main text, headings, tables, JSON-LD from every page.
+name: example
+start_urls:
+  - https://example.com/
+render: auto            # http | browser | auto (auto switches to a browser for JS-heavy sites)
+crawl:
+  max_pages: 25
+  max_depth: 1          # 0 = only start_urls, 1 = plus pages they link to, ...
+  same_domain: true
+  follow: []            # regexes; only follow links matching one of these (empty = all)
+  exclude: ["/login", "/cart", "\\?sort="]
+extract:
+  mode: auto
+politeness:
+  delay: 1.0            # seconds between requests to the same host
+  concurrency: 4
+  respect_robots: true

@@ -1,0 +1,24 @@
+# Rules mode: repeating items on listing pages, with pagination and change tracking.
+# Try it as-is: books.toscrape.com is a public sandbox made for practising scraping.
+name: books
+start_urls:
+  - https://books.toscrape.com/
+render: http
+schedule: every 6h       # used by `harvest schedule` and `harvest serve --schedule`
+crawl:
+  max_pages: 10
+  max_depth: 0
+  pagination: "li.next a"          # follow the "next" link on every page
+extract:
+  mode: rules
+  item: "article.product_pod"      # one item per matching element
+  key: url                         # stable identity, so price changes show up as 'changed'
+  fields:
+    title: {css: "h3 a::attr(title)"}
+    url:   {css: "h3 a::attr(href)", type: url}
+    price: {css: ".price_color::text", type: float}
+    stock: ".availability"         # shorthand: element text
+    rating: {css: "p.star-rating::attr(class)", regex: "star-rating (\\w+)"}
+notify:
+  webhook: null                    # Discord/Slack webhook URL to get pinged on changes
+  on: changes

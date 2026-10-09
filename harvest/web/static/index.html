@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harvest</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230b0b0b'/><path d='M9 23V9m14 14V9M9 16h14' stroke='%23a6e3a1' stroke-width='3.2' stroke-linecap='round'/></svg>">
+<style>
+:root{
+  --bg:#0a0a0a; --panel:#121212; --panel2:#171717; --line:#242424; --line2:#2e2e2e;
+  --text:#e8e8e8; --muted:#8c8c8c; --faint:#5c5c5c;
+  --accent:#a6e3a1; --accent-dim:rgba(166,227,161,.12); --accent-ink:#0b140b;
+  --warn:#e5c07b; --bad:#ef8a8a;
+  --mono:ui-monospace,"JetBrains Mono","Cascadia Code",Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Inter,Roboto,sans-serif;
+  --r:8px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.45 var(--sans)}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.app{display:grid;grid-template-columns:260px 1fr;height:100vh}
+aside{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:#0d0d0d}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 18px 14px;font-weight:650;letter-spacing:.2px}
+.brand svg{flex:none}
+.brand small{color:var(--faint);font-weight:500;margin-left:auto;font-family:var(--mono);font-size:11px}
+.side-actions{display:flex;gap:6px;padding:0 14px 12px}
+.joblist{overflow:auto;flex:1;padding:4px 8px 16px}
+.jobitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);cursor:pointer;color:var(--text)}
+.jobitem:hover{background:var(--panel)}
+.jobitem.active{background:var(--panel2);box-shadow:inset 2px 0 0 var(--accent)}
+.jobitem .meta{color:var(--faint);font-size:12px;font-family:var(--mono)}
+.jobitem .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line2);flex:none}
+.dot.done{background:var(--accent)} .dot.failed{background:var(--bad)} .dot.stopped{background:var(--warn)}
+.dot.running{background:var(--accent);animation:pulse 1s infinite}
+.dot.invalid{background:transparent;border:1.5px solid var(--bad)}
+@keyframes pulse{50%{opacity:.25}}
+.side-foot{border-top:1px solid var(--line);padding:10px 14px;color:var(--faint);font-size:12px}
+main{overflow:auto;min-width:0}
+.wrap{max-width:1200px;margin:0 auto;padding:22px 28px 60px}
+.head{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.head h1{font-size:22px;margin:0 0 4px;font-weight:650}
+.head .sub{color:var(--muted);font-size:13px;font-family:var(--mono);word-break:break-all}
+.head .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line2);background:var(--panel);padding:7px 13px;border-radius:var(--r);cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#444;background:var(--panel2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger:hover{border-color:var(--bad);color:var(--bad)}
+.btn.sm{padding:4px 9px;font-size:12.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:focus-visible,.tab:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}
+.tab{background:none;border:0;padding:9px 14px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab:hover{color:var(--text)} .tab.on{color:var(--text);border-bottom-color:var(--accent)}
+.tab .count{font-family:var(--mono);font-size:11px;color:var(--faint);margin-left:5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.stat .k{color:var(--muted);font-size:12px} .stat .v{font-size:22px;font-weight:650;font-family:var(--mono);margin-top:2px}
+.stat .v.g{color:var(--accent)} .stat .v.y{color:var(--warn)} .stat .v.r{color:var(--bad)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);margin-bottom:16px}
+.card h3{margin:0;padding:11px 14px;font-size:13px;font-weight:600;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px}
+.card h3 .r{margin-left:auto;display:flex;gap:6px;align-items:center;font-weight:400}
+.log{font:12.5px/1.6 var(--mono);padding:10px 14px;max-height:380px;overflow:auto}
+.log .ln{display:flex;gap:10px;white-space:nowrap}
+.log .ln .u{overflow:hidden;text-overflow:ellipsis;color:#cfcfcf}
+.c-g{color:var(--accent)} .c-y{color:var(--warn)} .c-r{color:var(--bad)} .c-m{color:var(--faint)}
+.empty{color:var(--faint);padding:22px 14px;text-align:center}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line)}
+input[type=text],input[type=url],input[type=number],select,textarea{background:#0c0c0c;border:1px solid var(--line2);border-radius:6px;padding:7px 10px}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+.grow{flex:1;min-width:160px}
+.tablewrap{overflow:auto;max-height:62vh}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:7px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{position:sticky;top:0;background:var(--panel2);color:var(--muted);font-weight:500;font-size:12px;z-index:1;white-space:nowrap}
+td{max-width:380px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.wrap{white-space:normal}
+tr:hover td{background:#151515}
+td.num{font-family:var(--mono)}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11.5px;font-family:var(--mono);border:1px solid var(--line2);color:var(--muted)}
+.pill.g{color:var(--accent);border-color:rgba(166,227,161,.35);background:var(--accent-dim)}
+.pill.y{color:var(--warn);border-color:rgba(229,192,123,.35)} .pill.r{color:var(--bad);border-color:rgba(239,138,138,.35)}
+textarea.code{width:100%;min-height:58vh;font:13px/1.55 var(--mono);resize:vertical;tab-size:2;border:0;border-radius:0 0 var(--r) var(--r);padding:14px;background:#0c0c0c}
+pre.json{margin:0;padding:14px;font:12.5px/1.55 var(--mono);overflow:auto;max-height:60vh;white-space:pre-wrap;word-break:break-word}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:6px 14px;padding:12px 14px;font-size:13px}
+.kv .k{color:var(--muted)} .kv .v{font-family:var(--mono);word-break:break-all}
+.diff del{color:var(--bad);text-decoration:line-through;opacity:.8} .diff ins{color:var(--accent);text-decoration:none}
+.toast{position:fixed;bottom:18px;right:18px;background:var(--panel2);border:1px solid var(--line2);padding:10px 14px;border-radius:var(--r);max-width:420px;box-shadow:0 8px 30px rgba(0,0,0,.5);z-index:50;font-size:13px}
+.toast.err{border-color:var(--bad)}
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--line2);border-radius:12px;padding:0;width:min(460px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog form{padding:18px;display:flex;flex-direction:column;gap:12px}
+dialog label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--muted)}
+dialog h2{margin:0;font-size:16px}
+.row{display:flex;gap:8px;justify-content:flex-end}
+.welcome{max-width:620px;margin:10vh auto;text-align:center;color:var(--muted)}
+.welcome h1{color:var(--text);font-size:26px}
+.hint{color:var(--faint);font-size:12px}
+.menu-btn{display:none}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  aside{position:fixed;inset:0 25% 0 0;z-index:20;transform:translateX(-100%);transition:transform .2s}
+  aside.open{transform:none}
+  .menu-btn{display:inline-block}
+  .wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#161616"/><path d="M9 23V9m14 14V9M9 16h14" stroke="#a6e3a1" stroke-width="3.2" stroke-linecap="round"/></svg>
+      Harvest <small>local</small>
+    </div>
+    <div class="side-actions">
+      <button class="btn primary" style="flex:1" onclick="newJob()">+ New job</button>
+      <button class="btn" onclick="showQuick()" title="Scrape one URL now">Quick</button>
+    </div>
+    <div class="joblist" id="jobs"></div>
+    <div class="side-foot" id="foot">loading</div>
+  </aside>
+  <main><div class="wrap" id="view"></div></main>
+</div>
+
+<dialog id="dlg-new">
+  <form method="dialog" onsubmit="return createJob(event)">
+    <h2>New job</h2>
+    <label>Name<input type="text" id="nj-name" required pattern="[\w.\-]+" placeholder="e.g. book-prices"></label>
+    <label>Start URL (optional)<input type="url" id="nj-url" placeholder="https://..."></label>
+    <label>Template
+      <select id="nj-tpl">
+        <option value="auto">auto: page metadata, main text, tables, JSON-LD</option>
+        <option value="list">list: repeating items with CSS rules + pagination</option>
+        <option value="spa">spa: JavaScript site, scrolling, clicking</option>
+        <option value="llm">llm: describe fields, local Ollama extracts them</option>
+      </select>
+    </label>
+    <div class="row"><button class="btn" value="cancel" formnovalidate>Cancel</button><button class="btn primary">Create</button></div>
+  </form>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const S = { jobs: [], cur: null, tab: "overview", poll: null, lastT: 0, search: "", page: 0 };
+try { S.cur = localStorage.getItem("harvest.job"); S.tab = localStorage.getItem("harvest.tab") || "overview"; } catch(e) {}
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { headers: { "Content-Type": "application/json" }, ...opts });
+  if (!r.ok) { let m = r.statusText; try { m = (await r.json()).detail || m } catch(e){}; throw new Error(m); }
+  const ct = r.headers.get("content-type") || "";
+  return ct.includes("json") ? r.json() : r.text();
+}
+function toast(msg, err) {
+  const t = document.createElement("div"); t.className = "toast" + (err ? " err" : ""); t.textContent = msg;
+  document.body.append(t); setTimeout(() => t.remove(), err ? 6000 : 2600);
+}
+const ago = iso => { if (!iso) return "never"; const s = (Date.now() - new Date(iso).getTime())/1000;
+  if (s < 60) return "just now"; if (s < 3600) return Math.floor(s/60)+"m ago"; if (s < 86400) return Math.floor(s/3600)+"h ago"; return Math.floor(s/86400)+"d ago"; };
+const until = ts => { if (!ts) return "-"; const s = ts - Date.now()/1000; if (s <= 0) return "due";
+  if (s < 3600) return "in " + Math.ceil(s/60) + "m"; if (s < 86400) return "in " + (s/3600).toFixed(1) + "h"; return "in " + (s/86400).toFixed(1) + "d"; };
+const statusPill = s => `<span class="pill ${ {done:"g",running:"g",failed:"r",stopped:"y"}[s] || "" }">${esc(s)}</span>`;
+
+// ---------------------------------------------------------------- sidebar
+async function loadJobs() {
+  try { S.jobs = await api("/api/jobs"); } catch(e) { $("#foot").textContent = "server unreachable"; return; }
+  const running = S.jobs.filter(j => j.running).length;
+  $("#foot").textContent = `${S.jobs.length} job${S.jobs.length===1?"":"s"}${running ? ` · ${running} running` : ""}`;
+  $("#jobs").innerHTML = S.jobs.map(j => {
+    const st = !j.valid ? "invalid" : j.running ? "running" : (j.last_run?.status || "");
+    return `<div class="jobitem ${j.name===S.cur?"active":""}" onclick="openJob('${esc(j.name)}')">
+      <span class="dot ${st}"></span>
+      <div style="min-width:0;flex:1"><div class="nm">${esc(j.name)}</div>
+      <div class="meta">${j.valid ? `${j.items} items · ${j.running ? "running" : ago(j.last_run?.started_at)}` : "invalid config"}</div></div>
+      ${j.schedule ? `<span class="pill" title="${esc(j.schedule)}">⏱</span>` : ""}
+    </div>`;
+  }).join("") || `<div class="empty">No jobs yet</div>`;
+}
+
+// ---------------------------------------------------------------- job view
+function openJob(name) {
+  S.cur = name; S.search = ""; S.page = 0;
+  try { localStorage.setItem("harvest.job", name) } catch(e) {}
+  $("#side").classList.remove("open");
+  render();
+}
+function setTab(t) { S.tab = t; try { localStorage.setItem("harvest.tab", t) } catch(e) {}; render(); }
+
+async function render() {
+  clearInterval(S.poll); S.poll = null;
+  await loadJobs();
+  const j = S.jobs.find(x => x.name === S.cur);
+  if (!j) return S.cur === "__quick__" ? showQuick() : welcome();
+  const tabs = [["overview","Overview"],["items","Items",j.items],["changes","Changes"],["runs","Runs"],["config","Config"]];
+  $("#view").innerHTML = `
+    <div class="head">
+      <button class="btn menu-btn" onclick="$('#side').classList.toggle('open')">☰</button>
+      <div style="min-width:0"><h1>${esc(j.name)}</h1>
+        <div class="sub">${j.valid ? esc(j.start_urls.join("  ")) : `<span class="c-r">${esc(j.error)}</span>`}</div>
+        ${j.valid ? `<div class="sub" style="margin-top:4px">render ${esc(j.render)} · extract ${esc(j.mode)}${j.schedule ? ` · ${esc(j.schedule)} (next ${until(j.next_run)})` : ""}</div>` : ""}
+      </div>
+      <div class="acts">
+        ${j.running ? `<button class="btn" onclick="stopJob()">Stop</button>`
+                    : `<button class="btn primary" ${j.valid?"":"disabled"} onclick="runJob()">Run now</button>`}
+        <button class="btn danger" onclick="deleteJob()">Delete</button>
+      </div>
+    </div>
+    <div class="tabs">${tabs.map(([k,l,c]) => `<button class="tab ${S.tab===k?"on":""}" onclick="setTab('${k}')">${l}${c!=null?`<span class="count">${c}</span>`:""}</button>`).join("")}</div>
+    <div id="pane"></div>`;
+  ({ overview, items: itemsTab, changes: changesTab, runs: runsTab, config: configTab }[S.tab] || overview)(j);
+}
+
+function welcome() {
+  $("#view").innerHTML = `<button class="btn menu-btn" onclick="$('#side').classList.toggle('open')">☰</button>
+  <div class="welcome"><h1>Harvest</h1>
+  <p>Create a job to crawl a site on a schedule, or use Quick to scrape one page right now.</p>
+  <p style="margin-top:22px;display:flex;gap:8px;justify-content:center"><button class="btn primary" onclick="newJob()">+ New job</button><button class="btn" onclick="showQuick()">Quick scrape</button></p>
+  <p class="hint" style="margin-top:28px">Harvest respects robots.txt and rate limits by default. Check a site's terms before scraping, and avoid collecting personal data.</p></div>`;
+}
+
+async function overview(j) {
+  const r = j.last_run;
+  const runId = j.live_run || r?.id;
+  $("#pane").innerHTML = `
+    <div class="grid" id="stats"></div>
+    <div class="card"><h3>${j.running ? `<span class="dot running"></span> Live log` : "Last run log"}<span class="r" id="runmeta"></span></h3>
+      <div class="log" id="log">${runId ? "" : `<div class="empty">No runs yet. Hit Run now.</div>`}</div></div>`;
+  S.lastT = 0;
+  if (!runId) { stats(null); return; }
+  const tick = async () => {
+    let d; try { d = await api(`/api/runs/${runId}?since=${S.lastT}`); } catch(e) { return; }
+    stats(d.run);
+    $("#runmeta").innerHTML = `#${d.run.id} ${statusPill(d.run.status)} <span class="c-m">${esc(ago(d.run.started_at))}</span>`;
+    const log = $("#log"); if (!log) return;
+    const stick = log.scrollTop + log.clientHeight >= log.scrollHeight - 30;
+    if (d.events.length) {
+      S.lastT = d.events[d.events.length-1].t;
+      log.insertAdjacentHTML("beforeend", d.events.map(evLine).join(""));
+    } else if (!d.live && !log.children.length && d.pages.length) {
+      log.innerHTML = d.pages.map(p => evLine({kind: p.error ? (p.status === -1 ? "blocked" : "error") : "page",
+        url: p.url, status: p.status, method: p.method, ms: p.elapsed_ms, items: p.items, msg: p.error})).join("");
+    }
+    if (stick) log.scrollTop = log.scrollHeight;
+    if (!d.live) { clearInterval(S.poll); S.poll = null; if (j.running) render(); }
+  };
+  await tick();
+  if (j.running) S.poll = setInterval(tick, 1000);
+}
+function evLine(e) {
+  const t = e.t ? new Date(e.t*1000).toLocaleTimeString() : "";
+  if (e.kind === "page") return `<div class="ln"><span class="c-m">${t}</span><span class="c-g">${e.status}</span><span class="c-m">${esc(e.method)} ${String(e.ms).padStart(5)}ms</span><span class="u">${esc(e.url)}</span>${e.items?`<b class="c-g">+${e.items}</b>`:""}</div>`;
+  if (e.kind === "blocked") return `<div class="ln"><span class="c-m">${t}</span><span class="c-y">robots</span><span class="u">${esc(e.url)}</span></div>`;
+  if (e.kind === "error" || e.kind === "warn") return `<div class="ln"><span class="c-m">${t}</span><span class="${e.kind==="error"?"c-r":"c-y"}">${e.kind}</span><span class="u">${esc(e.url||"")} ${esc(e.msg||"")}</span></div>`;
+  if (e.kind === "start") return `<div class="ln"><span class="c-m">${t}</span><span class="c-g">start</span><span>run #${e.run_id}</span></div>`;
+  return `<div class="ln"><span class="c-m">${t}</span><span class="c-m">${esc(e.kind)}</span><span class="u">${esc(e.msg||"")}</span></div>`;
+}
+function stats(r) {
+  const x = r || {};
+  const cell = (k, v, c="") => `<div class="stat"><div class="k">${k}</div><div class="v ${c}">${v ?? "-"}</div></div>`;
+  $("#stats").innerHTML = cell("Pages", x.pages) + cell("Items", x.items, "g") + cell("New", x.new_items, x.new_items ? "g" : "")
+    + cell("Changed", x.changed_items, x.changed_items ? "y" : "") + cell("Removed", x.removed_items, x.removed_items ? "r" : "")
+    + cell("Errors", x.errors, x.errors ? "r" : "") + cell("Robots blocked", x.blocked, x.blocked ? "y" : "");
+}
+
+async function itemsTab(j) {
+  const PAGE = 100;
+  $("#pane").innerHTML = `<div class="card">
+    <div class="toolbar">
+      <input type="text" class="grow" id="q" placeholder="Search items" value="${esc(S.search)}">
+      <span class="hint" id="total"></span>
+      ${["csv","xlsx","json","jsonl"].map(f => `<button class="btn sm" onclick="dl('${f}')">${f.toUpperCase()}</button>`).join("")}
+    </div>
+    <div class="tablewrap" id="tbl"></div>
+    <div class="toolbar" style="border:0;border-top:1px solid var(--line);justify-content:flex-end" id="pager"></div></div>`;
+  let timer;
+  $("#q").oninput = e => { clearTimeout(timer); timer = setTimeout(() => { S.search = e.target.value; S.page = 0; load(); }, 250); };
+  async function load() {
+    const d = await api(`/api/jobs/${encodeURIComponent(j.name)}/items?limit=${PAGE}&offset=${S.page*PAGE}${S.search ? "&search="+encodeURIComponent(S.search) : ""}`);
+    $("#total").textContent = `${d.total} item${d.total===1?"":"s"}`;
+    if (!d.items.length) { $("#tbl").innerHTML = `<div class="empty">${S.search ? "No matches" : "No items yet"}</div>`; $("#pager").innerHTML=""; return; }
+    const cols = []; d.items.forEach(i => Object.keys(i).forEach(k => { if (!k.startsWith("_") && !cols.includes(k)) cols.push(k) }));
+    cols.push("_url");
+    const fmt = v => {
+      if (v == null) return `<span class="c-m">-</span>`;
+      if (typeof v === "object") { const s = JSON.stringify(v); return `<span class="c-m" title="${esc(s.slice(0,2000))}">${esc(s.slice(0,140))}</span>`; }
+      const s = String(v);
+      if (/^https?:\/\//.test(s)) return `<a href="${esc(s)}" target="_blank" rel="noopener">${esc(s.replace(/^https?:\/\//,"").slice(0,70))}</a>`;
+      return `<span title="${esc(s.slice(0,2000))}">${esc(s.slice(0,300))}</span>`;
+    };
+    $("#tbl").innerHTML = `<table><thead><tr>${cols.map(c => `<th>${esc(c === "_url" ? "source" : c)}</th>`).join("")}<th>updated</th></tr></thead><tbody>${
+      d.items.map(i => `<tr>${cols.map(c => `<td class="${typeof i[c]==="number"?"num":""}">${fmt(i[c])}</td>`).join("")}<td class="c-m">${esc(ago(i._updated))}</td></tr>`).join("")
+    }</tbody></table>`;
+    const pages = Math.ceil(d.total / PAGE);
+    $("#pager").innerHTML = pages > 1 ? `<button class="btn sm" ${S.page?"":"disabled"} id="pv">Prev</button><span class="hint">${S.page+1} / ${pages}</span><button class="btn sm" ${S.page+1<pages?"":"disabled"} id="nx">Next</button>` : "";
+    if (pages > 1) { $("#pv").onclick = () => { S.page--; load() }; $("#nx").onclick = () => { S.page++; load() }; }
+  }
+  window.dl = f => { location.href = `/api/jobs/${encodeURIComponent(j.name)}/export?fmt=${f}${S.search ? "&search="+encodeURIComponent(S.search) : ""}` };
+  load().catch(e => toast(e.message, true));
+}
+
+async function changesTab(j) {
+  const runs = (await api(`/api/runs?job=${encodeURIComponent(j.name)}&limit=30`)).filter(r => r.status === "done");
+  $("#pane").innerHTML = `<div class="card"><div class="toolbar"><span class="hint">Run</span>
+    <select id="crun">${runs.map(r => `<option value="${r.id}">#${r.id} · ${esc(ago(r.started_at))} · +${r.new_items} ~${r.changed_items} -${r.removed_items}</option>`).join("")}</select>
+    <span class="hint">Set <code>extract.key</code> to a stable field (like url or id) so edits show as "changed" instead of new + removed.</span></div>
+    <div class="tablewrap" id="clist"></div></div>`;
+  if (!runs.length) { $("#clist").innerHTML = `<div class="empty">No completed runs yet</div>`; return; }
+  const load = async id => {
+    const rows = await api(`/api/jobs/${encodeURIComponent(j.name)}/changes?run=${id}`);
+    const label = d => { const o = d || {}; return o.title || o.name || o.text || o.url || o._url || ""; };
+    $("#clist").innerHTML = rows.length ? `<table><thead><tr><th>change</th><th>item</th><th>details</th></tr></thead><tbody>${rows.map(c => `
+      <tr><td><span class="pill ${c.change==="new"?"g":c.change==="changed"?"y":"r"}">${esc(c.change)}</span></td>
+      <td class="wrap">${esc(String(label(c.new_data || c.old_data)).slice(0,120)) || `<span class="c-m">${esc(c.key)}</span>`}</td>
+      <td class="wrap diff">${c.diff ? Object.entries(c.diff).map(([k,[o,n]]) => `<div><b>${esc(k)}</b> <del>${esc(JSON.stringify(o)).slice(0,120)}</del> <ins>${esc(JSON.stringify(n)).slice(0,120)}</ins></div>`).join("") : ""}</td></tr>`).join("")}</tbody></table>`
+      : `<div class="empty">Nothing new, changed or removed in this run</div>`;
+  };
+  $("#crun").onchange = e => load(e.target.value);
+  load(runs[0].id);
+}
+
+async function runsTab(j) {
+  const runs = await api(`/api/runs?job=${encodeURIComponent(j.name)}&limit=100`);
+  $("#pane").innerHTML = `<div class="card"><div class="tablewrap">${runs.length ? `<table><thead><tr>
+    <th>#</th><th>status</th><th>started</th><th>duration</th><th>pages</th><th>items</th><th>new</th><th>changed</th><th>removed</th><th>errors</th><th>note</th></tr></thead><tbody>
+    ${runs.map(r => { const dur = r.finished_at ? Math.round((new Date(r.finished_at) - new Date(r.started_at))/1000) + "s" : "-";
+      return `<tr style="cursor:pointer" onclick="runPages(${r.id})"><td class="num">${r.id}</td><td>${statusPill(r.status)}</td><td>${esc(new Date(r.started_at).toLocaleString())}</td><td class="num">${dur}</td>
+      <td class="num">${r.pages}</td><td class="num">${r.items}</td><td class="num c-g">${r.new_items||""}</td><td class="num c-y">${r.changed_items||""}</td><td class="num c-r">${r.removed_items||""}</td><td class="num ${r.errors?"c-r":""}">${r.errors}</td><td class="c-m">${esc(r.message||"")}</td></tr>`}).join("")}
+    </tbody></table>` : `<div class="empty">No runs yet</div>`}</div></div><div id="rpages"></div>`;
+}
+async function runPages(id) {
+  const d = await api(`/api/runs/${id}`);
+  const saved = d.pages.filter(p => p.html_path).length;
+  $("#rpages").innerHTML = `<div class="card"><h3>Pages in run #${id}<span class="r"><span class="hint">${d.pages.length} requests${saved ? ` · ${saved} saved` : ""}</span>
+    ${saved ? `<a class="btn sm primary" style="text-decoration:none" href="/api/runs/${id}/html.zip">Download HTML + JS/CSS</a>` : ""}</span></h3><div class="tablewrap"><table>
+    <thead><tr><th>status</th><th>via</th><th>ms</th><th>items</th><th>url</th><th>saved</th><th>error</th></tr></thead><tbody>
+    ${d.pages.map(p => `<tr><td class="num ${p.error?"c-r":"c-g"}">${p.status===-1?"robots":p.status}</td><td class="c-m">${esc(p.method)}</td><td class="num">${p.elapsed_ms}</td><td class="num">${p.items||""}</td>
+      <td><a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.url)}</a></td>
+      <td>${p.html_path ? `<a href="/api/pages/${p.id}/zip" title="${esc(p.html_path)}">zip</a>` : `<span class="c-m">-</span>`}</td><td class="c-r wrap">${esc(p.error||"")}</td></tr>`).join("")}
+    </tbody></table></div></div>`;
+  $("#rpages").scrollIntoView({behavior:"smooth"});
+}
+
+async function configTab(j) {
+  const { text } = await api(`/api/jobs/${encodeURIComponent(j.name)}/source`);
+  $("#pane").innerHTML = `<div class="card"><h3>${esc(j.file)}<span class="r"><span id="vmsg" class="hint"></span>
+    <button class="btn sm" onclick="validateCfg()">Validate</button><button class="btn sm primary" onclick="saveCfg()">Save</button></span></h3>
+    <textarea class="code" id="cfg" spellcheck="false">${esc(text)}</textarea></div>
+    <p class="hint">Ctrl+S saves. Field shorthand: <code>title: "h1"</code> grabs element text, <code>"a::attr(href)"</code> an attribute. Add <code>type: float|int|url</code>, <code>regex</code>, <code>multiple: true</code>.</p>`;
+  const ta = $("#cfg");
+  ta.addEventListener("keydown", e => {
+    if (e.key === "Tab") { e.preventDefault(); const s = ta.selectionStart; ta.setRangeText("  ", s, ta.selectionEnd, "end"); }
+    if ((e.ctrlKey || e.metaKey) && e.key === "s") { e.preventDefault(); saveCfg(); }
+  });
+}
+async function validateCfg() {
+  const d = await api("/api/validate", { method: "POST", body: JSON.stringify({ text: $("#cfg").value }) });
+  $("#vmsg").innerHTML = d.ok ? `<span class="c-g">valid</span> · ${esc(d.summary)}` : `<span class="c-r">${esc(d.error.split("\n").slice(0,3).join(" "))}</span>`;
+}
+async function saveCfg() {
+  try { await api(`/api/jobs/${encodeURIComponent(S.cur)}/source`, { method: "PUT", body: JSON.stringify({ text: $("#cfg").value }) });
+    toast("Saved"); $("#vmsg").innerHTML = `<span class="c-g">saved</span>`; loadJobs(); }
+  catch(e) { toast(e.message, true); $("#vmsg").innerHTML = `<span class="c-r">not saved</span>`; }
+}
+
+// ---------------------------------------------------------------- actions
+async function runJob() {
+  try { await api(`/api/jobs/${encodeURIComponent(S.cur)}/run`, { method: "POST" }); S.tab = "overview"; setTimeout(render, 300); }
+  catch(e) { toast(e.message, true); }
+}
+async function stopJob() { try { await api(`/api/jobs/${encodeURIComponent(S.cur)}/stop`, { method: "POST" }); toast("Stopping after in-flight requests"); } catch(e) { toast(e.message, true) } }
+async function deleteJob() {
+  if (!confirm(`Delete job file "${S.cur}"? Click OK, then choose whether to keep its data.`)) return;
+  const data = confirm("Also delete all stored runs and items for this job?");
+  try { await api(`/api/jobs/${encodeURIComponent(S.cur)}?data=${data}`, { method: "DELETE" }); S.cur = null; render(); toast("Deleted"); }
+  catch(e) { toast(e.message, true) }
+}
+function newJob() { $("#nj-name").value = ""; $("#nj-url").value = ""; $("#dlg-new").showModal(); }
+async function createJob(ev) {
+  if (ev.submitter && ev.submitter.value === "cancel") return true;
+  ev.preventDefault();
+  try {
+    const d = await api("/api/jobs", { method: "POST", body: JSON.stringify({ name: $("#nj-name").value.trim(), url: $("#nj-url").value.trim(), template: $("#nj-tpl").value }) });
+    $("#dlg-new").close(); S.tab = "config"; openJob(d.name);
+  } catch(e) { toast(e.message, true); }
+  return false;
+}
+
+// ---------------------------------------------------------------- quick scrape
+function showQuick() {
+  clearInterval(S.poll); S.cur = "__quick__"; $("#side").classList.remove("open");
+  document.querySelectorAll(".jobitem").forEach(e => e.classList.remove("active"));
+  $("#view").innerHTML = `
+    <div class="head"><button class="btn menu-btn" onclick="$('#side').classList.toggle('open')">☰</button>
+      <div><h1>Quick scrape</h1><div class="sub">One URL, no job, nothing saved. Leave selectors empty for automatic extraction.</div></div></div>
+    <div class="card"><div class="toolbar">
+      <input type="url" class="grow" id="qu" placeholder="https://..." autofocus>
+      <select id="qr"><option value="auto">auto</option><option value="http">http</option><option value="browser">browser</option></select>
+      <label class="hint" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="qsave"> save HTML + JS/CSS</label>
+      <button class="btn primary" id="qgo">Scrape</button></div>
+      <div class="toolbar" style="align-items:flex-start">
+        <textarea id="qs" class="grow" rows="3" placeholder="Optional CSS rules, one per line:\ntitle = h1\nprice = .price::text"></textarea>
+        <input type="text" id="qi" placeholder="item selector (optional)" style="width:220px">
+      </div>
+      <div id="qout"></div></div>`;
+  const go = async () => {
+    const url = $("#qu").value.trim(); if (!url) return;
+    $("#qgo").disabled = true; $("#qout").innerHTML = `<div class="empty">Fetching...</div>`;
+    try {
+      const d = await api("/api/quick", { method: "POST", body: JSON.stringify({ url, render: $("#qr").value, selectors: $("#qs").value, item: $("#qi").value, save_html: $("#qsave").checked }) });
+      const p = d.page || {};
+      $("#qout").innerHTML = `<div class="kv"><div class="k">status</div><div class="v ${p.error?"c-r":"c-g"}">${p.status===-1?"blocked by robots.txt":esc(p.status)} ${p.error?esc(p.error):""}</div>
+        <div class="k">fetched via</div><div class="v">${esc(p.method||"-")} · ${p.elapsed_ms ?? "-"}ms</div><div class="k">items</div><div class="v">${d.items.length}</div>
+        ${p.html_path ? `<div class="k">saved to</div><div class="v c-g">${esc(p.html_path)}</div>` : ""}</div>
+        <pre class="json">${esc(JSON.stringify(d.items.length === 1 ? d.items[0] : d.items, null, 2))}</pre>`;
+    } catch(e) { $("#qout").innerHTML = `<div class="empty c-r">${esc(e.message)}</div>`; }
+    $("#qgo").disabled = false;
+  };
+  $("#qgo").onclick = go; $("#qu").onkeydown = e => { if (e.key === "Enter") go(); };
+}
+
+render();
+setInterval(() => { if (!S.poll) loadJobs(); }, 5000);
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+# Secrets and local config
+.env
+.env.*
+*.key
+*.pem
+secrets/
+config.local.*
+CLAUDE.local.md
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Harvest runtime data
+harvest.db*
+*.db
+*.db-shm
+*.db-wal
+html/
+screenshots/
+*.xlsx
+*.csv
+*.jsonl
+
+# Personal job files (keep only the shipped examples)
+jobs/Car-Care-Woensel.yaml

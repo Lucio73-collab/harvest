@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="320" viewBox="0 0 1280 320" role="img" aria-label="Harvest: Polite web scraper with a CLI and a local dashboard">
+<title>Harvest</title>
+<rect width="1280" height="320" rx="20" fill="#0d0d0d" stroke="#222222" stroke-width="2"/>
+<g opacity="0.5" stroke="#222222" stroke-width="1"><path d="M960 0 V320"/><path d="M992 0 V320"/><path d="M1024 0 V320"/><path d="M1056 0 V320"/><path d="M1088 0 V320"/><path d="M1120 0 V320"/><path d="M1152 0 V320"/><path d="M1184 0 V320"/><path d="M1216 0 V320"/><path d="M1248 0 V320"/></g>
+<rect x="960" y="0" width="320" height="320" fill="url(#fade)"/>
+<defs><linearGradient id="fade" x1="0" x2="1"><stop offset="0" stop-color="#0d0d0d"/><stop offset="1" stop-color="#0d0d0d" stop-opacity="0"/></linearGradient></defs>
+<g transform="translate(96 96) scale(2.0)"><rect x="1" y="1" width="62" height="62" rx="14" fill="#161616" stroke="#2a2a2a" stroke-width="2"/><text x="32" y="33" text-anchor="middle" dominant-baseline="central" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="34" font-weight="800" fill="#a6e3a1" letter-spacing="-1">H</text></g>
+<text x="272" y="152.0" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="84" font-weight="800" fill="#f2f2f2" letter-spacing="-2">Harvest</text>
+<text x="272" y="204.0" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="30" fill="#9a9a9a">Polite web scraper with a CLI and a local dashboard</text>
+<rect x="272" y="230.0" width="56" height="6" rx="3" fill="#a6e3a1"/>
+</svg>
