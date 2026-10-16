@@ -8,7 +8,7 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-DEFAULT_UA = "HarvestBot/1.0 (+https://github.com/Lucio73-collab/harvest)"
+DEFAULT_UA = "HarvestBot/1.0 (+https://github.com/LucioTD/harvest)"
 
 
 class FieldRule(BaseModel):

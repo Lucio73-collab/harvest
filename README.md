@@ -6,19 +6,18 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Lucio73-collab/harvest/issues/new?template=bug_report.yml">Report bug</a>
+  <a href="https://github.com/LucioTD/harvest/issues/new?template=bug_report.yml">Report bug</a>
   ·
-  <a href="https://github.com/Lucio73-collab/harvest/issues/new?template=feature_request.yml">Request feature</a>
+  <a href="https://github.com/LucioTD/harvest/issues/new?template=feature_request.yml">Request feature</a>
   ·
-  <a href="https://github.com/Lucio73-collab/harvest/releases">Releases</a>
+  <a href="https://github.com/LucioTD/harvest/releases">Releases</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Lucio73-collab/harvest/actions/workflows/ci.yml"><img src="https://github.com/Lucio73-collab/harvest/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/version-1.0.0-a6e3a1?style=flat-square&labelColor=111111" alt="Version 1.0.0">
-  <img src="https://img.shields.io/badge/Python-3.11%2B-111111?style=flat-square&logo=python" alt="Python 3.11+">
-  <img src="https://img.shields.io/badge/browser-Playwright-333333?style=flat-square" alt="Playwright">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-333333?style=flat-square" alt="MIT license"></a>
+  <a href="https://github.com/LucioTD/harvest/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/LucioTD/harvest/ci.yml?branch=main&label=ci&style=flat-square&labelColor=060606" alt="CI status"></a>
+  <img src="https://img.shields.io/badge/python-3.11%2B-1254c6?style=flat-square&labelColor=060606&logo=python" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/browser-Playwright-3a3a3a?style=flat-square&labelColor=060606" alt="Playwright">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-3a3a3a?style=flat-square&labelColor=060606" alt="MIT license"></a>
 </p>
 
 <p align="center">
@@ -40,7 +39,7 @@ A polite, general-purpose web scraper with a CLI and a local dashboard.
 ## Install (Windows, Linux or macOS)
 
 ```bash
-git clone https://github.com/Lucio73-collab/harvest.git
+git clone https://github.com/LucioTD/harvest.git
 cd harvest
 uv venv
 uv pip install -e .
@@ -127,7 +126,7 @@ politeness:
   per_host: 2
   timeout: 20
   retries: 3
-  user_agent: "HarvestBot/1.0 (+https://github.com/Lucio73-collab/harvest)"
+  user_agent: "HarvestBot/1.0 (+https://github.com/LucioTD/harvest)"
 
 output:
   save_html: false        # true = save every page (same as --save-html)
